@@ -13,7 +13,7 @@ package Bugzilla::Install::Requirements;
 # Subroutines may "require" and "import" from modules, but they
 # MUST NOT "use."
 
-use 5.10.1;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -118,11 +118,19 @@ sub REQUIRED_MODULES {
 
     {package => 'Moo', module => 'Moo', version => '2.003004',},
 
-    # 2.24 contains several useful text virtual methods.
-    {package => 'Template-Toolkit', module => 'Template', version => '2.24'},
+    # versions prior to 3.008 are broken, see https://bugzilla.mozilla.org/show_bug.cgi?id=1560873
+    {package => 'Template-Toolkit', module => 'Template', version => '3.008'},
 
-    # 1.300011 has a debug mode for SMTP and automatically pass -i to sendmail.
-    {package => 'Email-Sender', module => 'Email::Sender', version => '1.300011',},
+    # versions prior to 2.600 pulled Email::Address, we now use Email::Address::XS
+    {package => 'Email-Sender', module => 'Email::Sender', version => '2.600',},
+
+    # versions prior to 1.05 contain a security risk
+    {
+      package => 'Email-Address-XS',
+      module  => 'Email::Address::XS',
+      version => '1.05',
+    },
+
     {
       package => 'Email-MIME',
       module  => 'Email::MIME',
@@ -745,7 +753,6 @@ sub have_vers {
   }
   $vnum ||= -1;
 
-  # Must do a string comparison as $vnum may be of the form 5.10.1.
   my $vok
     = ($vnum ne '-1' && version->new($vnum) >= version->new($wanted)) ? 1 : 0;
   my $blacklisted;
